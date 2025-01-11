@@ -1,6 +1,6 @@
 package com.shubhamsawarkar.lakshya.dao;
 
-import com.shubhamsawarkar.lakshya.entities.Activity;
+import com.shubhamsawarkar.lakshya.entity.Activity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,8 +1,7 @@
-package com.shubhamsawarkar.lakshya.entities;
+package com.shubhamsawarkar.lakshya.entity;
 
-import com.shubhamsawarkar.lakshya.structures.Schedule;
+import com.shubhamsawarkar.lakshya.structure.Schedule;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "recurrent_slot")

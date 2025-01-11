@@ -1,8 +1,8 @@
 package com.shubhamsawarkar.lakshya.dto;
 
-import com.shubhamsawarkar.lakshya.constants.APIResponseStatus;
+import com.shubhamsawarkar.lakshya.constant.APIResponseStatus;
 
-public record APIResponse<T>(APIResponseStatus status, String message, T body) {
+public record APIResponse(APIResponseStatus status, String message, ResponseBody body) {
 
     public APIResponse(APIResponseStatus status, String message) {
         this(status, message, null);

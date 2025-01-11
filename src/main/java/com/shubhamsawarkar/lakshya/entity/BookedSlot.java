@@ -1,7 +1,6 @@
-package com.shubhamsawarkar.lakshya.entities;
+package com.shubhamsawarkar.lakshya.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 

@@ -1,10 +1,15 @@
 package com.shubhamsawarkar.lakshya.dto.slots;
 
-import com.shubhamsawarkar.lakshya.entities.BookedSlot;
+import com.shubhamsawarkar.lakshya.dto.ResponseBody;
+import com.shubhamsawarkar.lakshya.entity.BookedSlot;
 
 import java.time.LocalDateTime;
 
-public record SlotDetails(Long slotId, LocalDateTime from, LocalDateTime to, String activity, String progress) {
+public record SlotDetails(Long slotId
+                        , LocalDateTime from
+                        , LocalDateTime to
+                        , String activity
+                        , String progress) implements ResponseBody {
 
     public static SlotDetails of(BookedSlot slot) {
         return new SlotDetails(slot.getSlotId()

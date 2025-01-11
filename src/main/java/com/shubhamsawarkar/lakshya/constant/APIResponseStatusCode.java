@@ -1,4 +1,4 @@
-package com.shubhamsawarkar.lakshya.constants;
+package com.shubhamsawarkar.lakshya.constant;
 
 public enum APIResponseStatusCode {
 

@@ -1,8 +1,7 @@
-package com.shubhamsawarkar.lakshya.entities;
+package com.shubhamsawarkar.lakshya.entity;
 
-import com.shubhamsawarkar.lakshya.constants.ActivityCategory;
+import com.shubhamsawarkar.lakshya.constant.ActivityCategory;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "activity")

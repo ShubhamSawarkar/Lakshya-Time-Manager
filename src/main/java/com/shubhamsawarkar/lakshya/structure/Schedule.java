@@ -1,4 +1,4 @@
-package com.shubhamsawarkar.lakshya.structures;
+package com.shubhamsawarkar.lakshya.structure;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
@@ -7,6 +7,9 @@ import jakarta.persistence.Converter;
 public class Schedule implements AttributeConverter<Schedule, String> {
 
     private String cronExpr;
+
+    public Schedule() {
+    }
 
     public Schedule(String cronExpr) {
         this.cronExpr = cronExpr;
