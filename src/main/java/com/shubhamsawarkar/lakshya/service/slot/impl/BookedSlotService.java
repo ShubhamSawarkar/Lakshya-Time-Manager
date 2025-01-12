@@ -15,7 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -36,16 +37,15 @@ public class BookedSlotService implements SlotService {
     @Transactional
     public APIResponse book(SlotBookRequest request) {
         Activity activity = activityDAO.findByActivityId(request.activityId());
-        validateActivity(activity);
 
-        LocalDateTime fromTime = request.date().atTime(request.from());
-        LocalDateTime toTime = request.date().atTime(request.to());
-        validateSlot(fromTime, toTime);
+        validateActivity(activity);
+        validateSlot(request.date(), request.from(), request.to());
 
         BookedSlot slot = new BookedSlot();
         slot.setActivity(activity);
-        slot.setStartTime(fromTime);
-        slot.setEndTime(toTime);
+        slot.setDate(request.date());
+        slot.setStartTime(request.from());
+        slot.setEndTime(request.to());
         slot.setProgressFrom(activity.getProgress());
         slot.setProgressTo(activity.getProgress());
         slot.setFinalized(false);
@@ -70,17 +70,20 @@ public class BookedSlotService implements SlotService {
         }
     }
 
-    private void validateSlot(LocalDateTime fromTime, LocalDateTime toTime) {
-        BookedSlot overlappingSlot = fetchOverlappingSlot(fromTime, toTime);
+    private void validateSlot(LocalDate date, LocalTime fromTime, LocalTime toTime) {
+        BookedSlot overlappingSlot = fetchOverlappingSlot(date, fromTime, toTime);
         if (Objects.nonNull(overlappingSlot)) {
             throw new InvalidRequestException("The following existing slot overlaps with this time frame. Please reschedule the existing slot or try another time frame."
                                              , SlotDetails.of(overlappingSlot));
         }
     }
 
-    private BookedSlot fetchOverlappingSlot(LocalDateTime fromTime, LocalDateTime toTime) {
-        LocalDateTime lastEndTime = Objects.requireNonNullElse(slotDAO.lastEndTimeBefore(fromTime), fromTime.truncatedTo(ChronoUnit.DAYS));
-        LocalDateTime nextStartTime = Objects.requireNonNullElse(slotDAO.nextStartTimeAfter(toTime), toTime.plusDays(1L).truncatedTo(ChronoUnit.DAYS));
-        return slotDAO.firstSlotInBetween(lastEndTime, nextStartTime);
+    private BookedSlot fetchOverlappingSlot(LocalDate date, LocalTime fromTime, LocalTime toTime) {
+        LocalTime lastEndTime = slotDAO.lastEndTimeBefore(date, fromTime);
+        LocalTime nextStartTime = slotDAO.nextStartTimeAfter(date, toTime);
+        lastEndTime = Objects.nonNull(lastEndTime) ? lastEndTime : LocalTime.MIN;
+        nextStartTime = Objects.nonNull(nextStartTime) ? nextStartTime.minusMinutes(1L) : LocalTime.MAX.truncatedTo(ChronoUnit.MINUTES);
+        System.out.println(lastEndTime + "  -  " + nextStartTime);
+        return slotDAO.firstSlotInBetween(date, lastEndTime, nextStartTime);
     }
 }

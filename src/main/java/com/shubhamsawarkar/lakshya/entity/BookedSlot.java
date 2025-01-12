@@ -2,7 +2,8 @@ package com.shubhamsawarkar.lakshya.entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "booked_slot")
@@ -13,11 +14,14 @@ public class BookedSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long slotId;
 
+    @Column(name="date")
+    private LocalDate date;
+
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    private LocalTime endTime;
 
     @ManyToOne
     @JoinColumn(name = "activity_id")
@@ -40,19 +44,27 @@ public class BookedSlot {
         this.slotId = slotId;
     }
 
-    public LocalDateTime getStartTime() {
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
 
