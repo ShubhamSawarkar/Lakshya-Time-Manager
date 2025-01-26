@@ -71,6 +71,14 @@ public class BookedSlotService implements SlotService {
     }
 
     private void validateSlot(LocalDate date, LocalTime fromTime, LocalTime toTime) {
+        if (date.isBefore(LocalDate.now())
+           || (date.isEqual(LocalDate.now()) && fromTime.isBefore(LocalTime.now()))) {
+            throw new InvalidRequestException("The slot date/time must be of future in order to book a time slot");
+        }
+        if (fromTime.equals(toTime) || fromTime.isAfter(toTime)) {
+            throw new InvalidRequestException("The 'to' time must be after the 'from' time");
+        }
+
         BookedSlot overlappingSlot = fetchOverlappingSlot(date, fromTime, toTime);
         if (Objects.nonNull(overlappingSlot)) {
             throw new InvalidRequestException("The following existing slot overlaps with this time frame. Please reschedule the existing slot or try another time frame."

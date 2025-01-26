@@ -4,7 +4,6 @@ import com.shubhamsawarkar.lakshya.dto.ResponseBody;
 import com.shubhamsawarkar.lakshya.entity.BookedSlot;
 
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 public record SlotDetails(Long slotId
                         , String date
@@ -14,10 +13,12 @@ public record SlotDetails(Long slotId
                         , String progress) implements ResponseBody {
 
     public static SlotDetails of(BookedSlot slot) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
         return new SlotDetails(slot.getSlotId()
                  , slot.getDate().toString()
-                 , slot.getStartTime().format(DateTimeFormatter.ISO_TIME)
-                 , slot.getEndTime().format(DateTimeFormatter.ISO_TIME)
+                 , slot.getStartTime().format(timeFormatter)
+                 , slot.getEndTime().format(timeFormatter)
                  , slot.getActivity().getTitle()
                  , formatProgress(slot.getActivity().getProgress(), slot.getActivity().getLength()));
     }
