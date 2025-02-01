@@ -1,6 +1,8 @@
 package com.shubhamsawarkar.lakshya.dao;
 
+import com.shubhamsawarkar.lakshya.entity.Activity;
 import com.shubhamsawarkar.lakshya.entity.BookedSlot;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -19,4 +21,8 @@ public interface BookedSlotDAO extends CrudRepository<BookedSlot, Long> {
 
     @Query(value = "select s from BookedSlot s where date = :date and startTime = (select min(startTime) from BookedSlot where date = :date and startTime between :from and :to)")
     BookedSlot firstSlotInBetween(LocalDate date, LocalTime from, LocalTime to);
+
+    @Modifying
+    @Query(value = "update BookedSlot s set s.progressFrom = :progressTo where activity = :activity and isFinalized is false")
+    void updateFromProgressForActivity(Activity activity, short progressTo);
 }

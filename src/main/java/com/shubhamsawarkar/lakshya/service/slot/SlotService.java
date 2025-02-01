@@ -8,5 +8,5 @@ public interface SlotService {
 
     APIResponse book(SlotBookRequest request);
 
-    APIResponse finalize(SlotFinalizeRequest request);
+    APIResponse finalize(Long slotId, SlotFinalizeRequest request);
 }

@@ -10,6 +10,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.DateTimeException;
 import java.util.Objects;
@@ -52,15 +53,25 @@ public class ErrorHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<APIResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
-        String errorMessage = GENERIC_ERROR_MSG;
-        if (exception.getCause() instanceof InvalidFormatException cause) {
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<APIResponse> handleInvalidDataTypeException(Exception exception) {
+        String fieldName = null, currentValue = null, targetDataType = null;
+
+        if (exception instanceof HttpMessageNotReadableException && exception.getCause() instanceof InvalidFormatException cause) {
             JsonMappingException.Reference ref = cause.getPath().stream().findFirst().orElse(null);
-            String fieldName = Objects.nonNull(ref) ? ref.getFieldName() : null;
-            String targetDataType = Objects.nonNull(cause.getTargetType()) ? cause.getTargetType().getSimpleName() : null;
+            fieldName = Objects.nonNull(ref) ? ref.getFieldName() : null;
+            currentValue = Objects.nonNull(cause.getValue()) ? cause.getValue().toString() : null;
+            targetDataType = Objects.nonNull(cause.getTargetType()) ? cause.getTargetType().getSimpleName() : null;
+        } else if (exception instanceof MethodArgumentTypeMismatchException typeMismatchException) {
+            fieldName = typeMismatchException.getName();
+            currentValue = Objects.nonNull(typeMismatchException.getValue()) ? typeMismatchException.getValue().toString() : null;
+            targetDataType = Objects.nonNull(typeMismatchException.getRequiredType()) ? typeMismatchException.getRequiredType().getSimpleName() : null;
+        }
+
+        String errorMessage = GENERIC_ERROR_MSG;
+        if (Objects.nonNull(fieldName) && Objects.nonNull(targetDataType)) {
             errorMessage = "Invalid value '"
-                         + cause.getValue()
+                         + currentValue
                          + "' for the field '"
                          + fieldName
                          + "', expected a valid value of type '"

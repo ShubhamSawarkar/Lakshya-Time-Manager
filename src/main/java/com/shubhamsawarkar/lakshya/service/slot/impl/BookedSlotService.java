@@ -57,8 +57,23 @@ public class BookedSlotService implements SlotService {
     }
 
     @Override
-    public APIResponse finalize(SlotFinalizeRequest request) {
-        return null;
+    @Transactional
+    public APIResponse finalize(Long slotId, SlotFinalizeRequest request) {
+        BookedSlot slot = slotDAO.findById(slotId).orElseThrow(() -> new InvalidRequestException("Invalid Slot ID"));
+        Activity activity = slot.getActivity();
+
+        validateIfFinalized(slot);
+        validateProgress(activity, request.progress());
+
+        slot.setProgressTo(request.progress());
+        slot.setFinalized(true);
+        activity.setProgress(request.progress());
+        slotDAO.save(slot);
+        slotDAO.updateFromProgressForActivity(activity, request.progress());
+
+        return new APIResponse(APIResponseStatus.OK
+                 , "Slot is finalized with the following details"
+                 , SlotDetails.of(slot));
     }
 
     private void validateActivity(Activity activity) {
@@ -93,5 +108,24 @@ public class BookedSlotService implements SlotService {
         nextStartTime = Objects.nonNull(nextStartTime) ? nextStartTime.minusMinutes(1L) : LocalTime.MAX.truncatedTo(ChronoUnit.MINUTES);
         System.out.println(lastEndTime + "  -  " + nextStartTime);
         return slotDAO.firstSlotInBetween(date, lastEndTime, nextStartTime);
+    }
+
+    private void validateIfFinalized(BookedSlot slot) {
+        if (slot.isFinalized()) {
+            throw new InvalidRequestException("This slot is already finalized; progress : from '"
+                    + slot.getProgressFrom()
+                    + "' to '"
+                    + slot.getProgressTo()
+                    + "'");
+        }
+    }
+
+    private void validateProgress(Activity activity, short progressTo) {
+        if (progressTo < activity.getProgress()) {
+            throw new InvalidRequestException("The activity of this slot is already completed up to '" + activity.getProgress() + "'");
+        }
+        if (progressTo > activity.getLength()) {
+            throw new InvalidRequestException("The maximum progress of this activity is '" + activity.getLength() + "'");
+        }
     }
 }
