@@ -14,17 +14,12 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class DaysDeserializer extends StdDeserializer<Days> {
 
     private static final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
     private static final String WEEK_DAY_PATTERN = "^(?:MON|TUE|WED|THU|FRI|SAT|SUN)(?:,(?:MON|TUE|WED|THU|FRI|SAT|SUN))*$";
     private static final String MONTH_DAY_PATTERN = "^(?:[1-9]|[12]\\d|3[0-1])(?:,([1-9]|[12]\\d|3[0-1]))*$";
-    private static final Map<String, DayOfWeek> WEEK_DAY_INDICES = Arrays.stream(DayOfWeek.values())
-                                                                  .collect(Collectors.toMap(
-                                                                          weekDay -> weekDay.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-                                                                        , weekDay -> weekDay));
 
     public DaysDeserializer() {
         this(null);
@@ -46,7 +41,7 @@ public class DaysDeserializer extends StdDeserializer<Days> {
         }
 
         return switch (dayType) {
-            case EXACT_DATE -> exactDateDaysOf(daySpec);
+            case DATE -> exactDateDaysOf(daySpec);
             case DAY_OF_THE_MONTH -> monthDaysOf(daySpec);
             case DAY_OF_THE_WEEK -> weekDaysOf(daySpec);
         };
@@ -60,7 +55,7 @@ public class DaysDeserializer extends StdDeserializer<Days> {
         DayType dayType = null;
         if (StringUtils.hasText(daySpec)) {
             if (datePattern.matcher(daySpec).matches()) {
-                dayType = DayType.EXACT_DATE;
+                dayType = DayType.DATE;
             } else if (weekDayPattern.matcher(daySpec).matches()) {
                 dayType = DayType.DAY_OF_THE_WEEK;
             } else if (monthDayPattern.matcher(daySpec).matches()) {
@@ -71,22 +66,28 @@ public class DaysDeserializer extends StdDeserializer<Days> {
     }
 
     private Days exactDateDaysOf(String daySpec) {
-        return new Days(Collections.singletonList(new Days.Day(LocalDate.parse(daySpec))));
+        return new Days(LocalDate.parse(daySpec));
     }
 
     private Days monthDaysOf(String daySpec) {
-        List<Days.Day> monthDays = Arrays.stream(daySpec.split(","))
-                                  .map(Byte::parseByte)
-                                  .map(Days.Day::new)
+        List<Integer> monthDays = Arrays.stream(daySpec.split(","))
+                                  .map(Integer::parseInt)
                                   .toList();
-        return new Days(monthDays);
+        return new Days(DayType.DAY_OF_THE_MONTH, monthDays);
     }
 
     private Days weekDaysOf(String daySpec) {
-        List<Days.Day> weekDays = Arrays.stream(daySpec.split(","))
-                                 .map(WEEK_DAY_INDICES::get)
-                                 .map(Days.Day::new)
+        List<Integer> weekDays = Arrays.stream(daySpec.split(","))
+                                 .map(this::weekDayIndexOf)
                                  .toList();
-        return new Days(weekDays);
+        return new Days(DayType.DAY_OF_THE_WEEK, weekDays);
+    }
+
+    private Integer weekDayIndexOf(String weekDay) {
+        DayOfWeek matchedWeekDay = Arrays.stream(DayOfWeek.values())
+                                  .filter(day -> day.getDisplayName(TextStyle.SHORT, Locale.getDefault()).equalsIgnoreCase(weekDay))
+                                  .findFirst()
+                                  .orElse(null);
+        return Objects.nonNull(matchedWeekDay) ? matchedWeekDay.getValue() : 0;
     }
 }
