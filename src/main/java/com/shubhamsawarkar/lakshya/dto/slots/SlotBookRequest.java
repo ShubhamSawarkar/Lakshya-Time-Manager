@@ -1,14 +1,12 @@
 package com.shubhamsawarkar.lakshya.dto.slots;
 
+import com.shubhamsawarkar.lakshya.dto.Days;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 
-public record SlotBookRequest(
-                              @NotNull(message = "A date must be specified in order to book a time slot")
-                              LocalDate date
+public record SlotBookRequest(Days days
                             , @NotNull(message = "A 'from' time must be specified in order to book a time slot")
                               LocalTime from
                             , @NotNull(message = "A 'to' time must be specified in order to book a time slot")
